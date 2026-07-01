@@ -1,20 +1,23 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Admin Dashboard</title>
-</head>
-<body>
-    <h2>Admin Dashboard</h2>
-    <p>Welcome, {{ request.user.username }}!</p>
-    <p><a href="{% url 'logout' %}">Logout</a></p>
+{% extends 'myapp/base.html' %}
+{% block title %}Admin Dashboard — LapTrack{% endblock %}
+{% block content %}
+<div class="card dashboard">
+    <div class="dashboard-header">
+        <div>
+            <div class="eyebrow">Admin Dashboard</div>
+            <h2 style="margin-bottom:0;">Welcome, {{ request.user.username }}</h2>
+        </div>
+        <a href="{% url 'logout' %}">Log out</a>
+    </div>
 
-    <h3>Total Registered Users: {{ total_users }}</h3>
+    <div class="stat">{{ total_users }}</div>
+    <div class="stat-label">Registered users</div>
 
-    <table border="1" cellpadding="8">
+    <table>
         <tr>
             <th>Username</th>
             <th>Email</th>
-            <th>Date Joined</th>
+            <th>Date joined</th>
         </tr>
         {% for user in users %}
         <tr>
@@ -24,5 +27,5 @@
         </tr>
         {% endfor %}
     </table>
-</body>
-</html>
+</div>
+{% endblock %}

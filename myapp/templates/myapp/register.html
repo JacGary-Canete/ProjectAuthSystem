@@ -1,23 +1,22 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Register</title>
-</head>
-<body>
-    <h2>Create an Account</h2>
+{% extends 'myapp/base.html' %}
+{% block title %}Register — LapTrack{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="eyebrow">LapTrack</div>
+    <h2>Create your account</h2>
 
     {% if messages %}
         {% for message in messages %}
-            <p>{{ message }}</p>
+            <div class="message">{{ message }}</div>
         {% endfor %}
     {% endif %}
 
     <form method="POST">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Register</button>
+        <button type="submit">Create account</button>
     </form>
 
-    <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
-</body>
-</html>
+    <div class="helper-text">Already have an account? <a href="{% url 'login' %}">Log in</a></div>
+</div>
+{% endblock %}

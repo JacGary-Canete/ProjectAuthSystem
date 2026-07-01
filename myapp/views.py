@@ -14,8 +14,9 @@ def register_view(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
+            user.is_staff = (form.cleaned_data['role'] == 'staff')
             user.save()
-            messages.success(request, 'Account created successfully. Please log in.')
+            messages.success(request, 'Account created successfully! You may now log in.')
             return redirect('login')
     else:
         form = RegisterForm()
@@ -28,10 +29,17 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('dashboard_home')
+            if user.is_staff:
+                return redirect('dashboard_home')
+            else:
+                return redirect('student_dashboard')
         else:
-            messages.error(request, 'Invalid username or password.')
+            messages.error(request, 'Invalid email or password. Please try again.')
     return render(request, 'myapp/login.html')
+
+@login_required
+def student_dashboard(request):
+    return render(request, 'myapp/student_dashboard.html')
 
 def logout_view(request):
     logout(request)
