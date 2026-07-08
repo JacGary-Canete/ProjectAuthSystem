@@ -9,6 +9,11 @@
         </div>
         <a href="{% url 'logout' %}">Log out</a>
     </div>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
 
     <div class="stat">{{ available_count }}</div>
     <div class="stat-label">Available Laptops <a href="{% url 'browse_laptops' %}" style="color:var(--slate); font-weight:600; text-decoration:none; font-size:13px;">(View all →)</a></div>

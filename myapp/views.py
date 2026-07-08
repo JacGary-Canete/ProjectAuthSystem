@@ -76,6 +76,10 @@ def browse_laptops(request):
 
 @login_required
 def borrow_laptop(request, laptop_id):
+    if Loan.objects.filter(borrower=request.user, loan_status='active').exists():
+        messages.error(request, 'You already have an active loan. Return it before borrowing another laptop.')
+        return redirect('browse_laptops')
+
     laptop = Laptop.objects.get(id=laptop_id)
 
     if laptop.status != 'available':
@@ -93,7 +97,6 @@ def borrow_laptop(request, laptop_id):
 
     messages.success(request, f'You have borrowed {laptop.brand} {laptop.model}. Due in 7 days.')
     return redirect('student_dashboard')
-
 
 @login_required
 def return_laptop(request, loan_id):
