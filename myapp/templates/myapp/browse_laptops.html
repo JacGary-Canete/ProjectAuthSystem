@@ -1,13 +1,13 @@
 {% extends 'myapp/base.html' %}
-{% block title %}Laptop Inventory — LapTrack{% endblock %}
+{% block title %}Available Laptops — LapTrack{% endblock %}
 {% block content %}
 <div class="card dashboard">
     <div class="dashboard-header">
         <div>
-            <div class="eyebrow">Inventory</div>
-            <h2 style="margin-bottom:0;">Laptop Inventory (Full Details)</h2>
+            <div class="eyebrow">Browse</div>
+            <h2 style="margin-bottom:0;">Available Laptops</h2>
         </div>
-        <a href="{% url 'laptop_add' %}">+ Add Laptop</a>
+        <a href="{% url 'student_dashboard' %}">← Back</a>
     </div>
 
     {% if messages %}
@@ -22,7 +22,7 @@
             <th>Brand / Model</th>
             <th>Specs</th>
             <th>Battery</th>
-            <th>Status</th>
+            <th></th>
         </tr>
         {% for laptop in laptops %}
         <tr>
@@ -30,13 +30,16 @@
             <td>{{ laptop.brand }} {{ laptop.model }}</td>
             <td>{{ laptop.processor }}, {{ laptop.ram_gb }}GB RAM, {{ laptop.storage_gb }}GB</td>
             <td>{{ laptop.battery_health }}%</td>
-            <td>{{ laptop.get_status_display }}</td>
+            <td>
+                <form method="POST" action="{% url 'borrow_laptop' laptop.id %}">
+                    {% csrf_token %}
+                    <button type="submit" style="width:auto; padding:6px 14px; font-size:13px; margin-top:0;">Borrow</button>
+                </form>
+            </td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" style="color:var(--muted); text-align:center;">No laptops added yet</td></tr>
+        <tr><td colspan="5" style="color:var(--muted); text-align:center;">No laptops currently available</td></tr>
         {% endfor %}
     </table>
-
-    <p style="margin-top:20px;"><a href="{% url 'dashboard_home' %}" style="color:var(--slate); font-size:13.5px;">← Back to Dashboard</a></p>
 </div>
 {% endblock %}

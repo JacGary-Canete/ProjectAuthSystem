@@ -9,6 +9,8 @@ from django.contrib import messages
 from .forms import RegisterForm
 from .models import Laptop, Loan
 from .forms import LaptopForm
+from django.utils import timezone
+from datetime import timedelta
 
 def register_view(request):
     if request.method == 'POST':
@@ -48,6 +50,29 @@ def student_dashboard(request):
         'available_count': available_count,
         'active_loans': active_loans,
     })
+@login_required
+def browse_laptops(request):
+    laptops = Laptop.objects.filter(status='available')
+    return render(request, 'myapp/browse_laptops.html', {'laptops': laptops})
+@login_required
+def borrow_laptop(request, laptop_id):
+    laptop = Laptop.objects.get(id=laptop_id)
+
+    if laptop.status != 'available':
+        messages.error(request, 'This laptop is no longer available.')
+        return redirect('browse_laptops')
+
+    Loan.objects.create(
+        laptop=laptop,
+        borrower=request.user,
+        due_date=timezone.now() + timedelta(days=7),
+        loan_status='active',
+    )
+    laptop.status = 'borrowed'
+    laptop.save()
+
+    messages.success(request, f'You have borrowed {laptop.brand} {laptop.model}. Due in 7 days.')
+    return redirect('student_dashboard')
 def logout_view(request):
     logout(request)
     return redirect('login')

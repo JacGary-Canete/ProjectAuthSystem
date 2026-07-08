@@ -9,4 +9,6 @@ urlpatterns = [
     path('student-dashboard/', views.student_dashboard, name='student_dashboard'),
     path('laptops/', views.laptop_list, name='laptop_list'),
     path('laptops/add/', views.laptop_add, name='laptop_add'),
+    path('browse-laptops/', views.browse_laptops, name='browse_laptops'),
+    path('borrow/<int:laptop_id>/', views.borrow_laptop, name='borrow_laptop'),
 ]

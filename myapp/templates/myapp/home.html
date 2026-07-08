@@ -9,7 +9,11 @@
         </div>
         <a href="{% url 'logout' %}">Log out</a>
     </div>
-
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
     <p style="margin-bottom:16px;"><a href="{% url 'laptop_add' %}" style="color:var(--slate); font-weight:600; text-decoration:none; font-size:13.5px;">+ Add Laptop</a></p>
     <p style="margin-bottom:16px;"><a href="{% url 'laptop_list' %}" style="color:var(--slate); font-weight:600; text-decoration:none; font-size:13.5px;">View Full Inventory Details →</a></p>
     <table>
