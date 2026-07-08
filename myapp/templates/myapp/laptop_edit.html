@@ -1,0 +1,16 @@
+{% extends 'myapp/base.html' %}
+{% block title %}Edit Laptop — LapTrack{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="eyebrow">Inventory</div>
+    <h2>Edit {{ laptop.asset_tag }}</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <div class="helper-text"><a href="{% url 'laptop_list' %}">← Back to inventory</a></div>
+</div>
+{% endblock %}

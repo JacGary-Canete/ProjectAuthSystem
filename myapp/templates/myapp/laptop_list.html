@@ -31,6 +31,7 @@
             <td>{{ laptop.processor }}, {{ laptop.ram_gb }}GB RAM, {{ laptop.storage_gb }}GB</td>
             <td>{{ laptop.battery_health }}%</td>
             <td>{{ laptop.get_status_display }}</td>
+        <td><a href="{% url 'laptop_edit' laptop.id %}" style="color:var(--slate); font-size:13px; font-weight:600; text-decoration:none;">Edit</a></td>
         </tr>
         {% empty %}
         <tr><td colspan="5" style="color:var(--muted); text-align:center;">No laptops added yet</td></tr>

@@ -19,6 +19,7 @@
             <th>Brand</th>
             <th>Due Date</th>
             <th>Status</th>
+            <th></th>
         </tr>
         {% for loan in active_loans %}
         <tr>
@@ -26,9 +27,15 @@
             <td>{{ loan.laptop.brand }} {{ loan.laptop.model }}</td>
             <td>{{ loan.due_date|date:"M d, Y" }}</td>
             <td>{{ loan.get_loan_status_display }}</td>
+            <td>
+                <form method="POST" action="{% url 'return_laptop' loan.id %}">
+                    {% csrf_token %}
+                    <button type="submit" style="width:auto; padding:6px 14px; font-size:13px; margin-top:0;">Return</button>
+                </form>
+            </td>
         </tr>
         {% empty %}
-        <tr><td colspan="4" style="color:var(--muted); text-align:center;">No active loan</td></tr>
+        <tr><td colspan="5" style="color:var(--muted); text-align:center;">No active loan</td></tr>
         {% endfor %}
     </table>
 </div>
