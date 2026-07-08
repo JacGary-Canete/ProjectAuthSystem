@@ -7,12 +7,15 @@ from django.shortcuts import render
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import RegisterForm
+from .models import Laptop, Loan
+from .forms import LaptopForm
 
 def register_view(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
+            user.username = form.cleaned_data['email']
             user.set_password(form.cleaned_data['password'])
             user.is_staff = (form.cleaned_data['role'] == 'staff')
             user.save()
@@ -39,8 +42,12 @@ def login_view(request):
 
 @login_required
 def student_dashboard(request):
-    return render(request, 'myapp/student_dashboard.html')
-
+    available_count = Laptop.objects.filter(status='available').count()
+    active_loans = Loan.objects.filter(borrower=request.user, loan_status='active')
+    return render(request, 'myapp/student_dashboard.html', {
+        'available_count': available_count,
+        'active_loans': active_loans,
+    })
 def logout_view(request):
     logout(request)
     return redirect('login')
@@ -51,9 +58,24 @@ def is_staff_user(user):
 @login_required
 @user_passes_test(is_staff_user, login_url='login')
 def dashboard_home(request):
-    total_users = User.objects.count()
-    users = User.objects.all()
-    return render(request, 'myapp/home.html', {
-        'total_users': total_users,
-        'users': users
-    })
+    laptops = Laptop.objects.all()
+    return render(request, 'myapp/home.html', {'laptops': laptops})
+
+@login_required
+@user_passes_test(is_staff_user, login_url='login')
+def laptop_list(request):
+    laptops = Laptop.objects.all()
+    return render(request, 'myapp/laptop_list.html', {'laptops': laptops})
+
+@login_required
+@user_passes_test(is_staff_user, login_url='login')
+def laptop_add(request):
+    if request.method == 'POST':
+        form = LaptopForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Laptop added to inventory.')
+            return redirect('laptop_list')
+    else:
+        form = LaptopForm()
+    return render(request, 'myapp/laptop_add.html', {'form': form})

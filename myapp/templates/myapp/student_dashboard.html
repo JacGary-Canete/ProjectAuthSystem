@@ -5,10 +5,32 @@
     <div class="dashboard-header">
         <div>
             <div class="eyebrow">Student Dashboard</div>
-            <h2 style="margin-bottom:0;">Welcome, {{ request.user.username }}</h2>
+            <h2 style="margin-bottom:0;">Welcome, {{ request.user.first_name }}</h2>
         </div>
         <a href="{% url 'logout' %}">Log out</a>
     </div>
-    <p style="color:var(--muted); font-size:14px;">Laptop availability and loan tracking features coming soon.</p>
+
+    <div class="stat">{{ available_count }}</div>
+    <div class="stat-label">Available Laptops</div>
+
+    <h3 style="font-family:'Space Grotesk', sans-serif; font-size:16px; margin-bottom:12px; color:var(--navy);">Your Active Loan</h3>
+    <table>
+        <tr>
+            <th>Asset Tag</th>
+            <th>Brand</th>
+            <th>Due Date</th>
+            <th>Status</th>
+        </tr>
+        {% for loan in active_loans %}
+        <tr>
+            <td>{{ loan.laptop.asset_tag }}</td>
+            <td>{{ loan.laptop.brand }} {{ loan.laptop.model }}</td>
+            <td>{{ loan.due_date|date:"M d, Y" }}</td>
+            <td>{{ loan.get_loan_status_display }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="color:var(--muted); text-align:center;">No active loan</td></tr>
+        {% endfor %}
+    </table>
 </div>
 {% endblock %}

@@ -1,19 +1,22 @@
 from django import forms
 from django.contrib.auth.models import User
 
+from myapp.models import Laptop
+
+
 class RegisterForm(forms.ModelForm):
     ROLE_CHOICES = [
         ('staff', 'Staff / IT Admin'),
         ('student', 'Student'),
     ]
 
-    role = forms.ChoiceField(choices=ROLE_CHOICES, widget=forms.RadioSelect)
+    role = forms.ChoiceField(choices=ROLE_CHOICES)
     password = forms.CharField(widget=forms.PasswordInput)
     confirm_password = forms.CharField(widget=forms.PasswordInput)
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'username']
+        fields = ['first_name', 'last_name', 'email']
 
     def clean(self):
         cleaned_data = super().clean()
@@ -28,3 +31,12 @@ class RegisterForm(forms.ModelForm):
             raise forms.ValidationError("Email is already registered.")
 
         return cleaned_data
+
+class LaptopForm(forms.ModelForm):
+    class Meta:
+        model = Laptop
+        fields = ['asset_tag', 'brand', 'model', 'processor', 'ram_gb', 'storage_gb', 'battery_health', 'status',
+                  'purchase_date', 'condition_notes']
+        widgets = {
+            'purchase_date': forms.DateInput(attrs={'type': 'date'}),
+        }
