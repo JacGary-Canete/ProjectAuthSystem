@@ -13,6 +13,8 @@ urlpatterns = [
     path('borrow/<int:laptop_id>/', views.borrow_laptop, name='borrow_laptop'),
     path('return/<int:loan_id>/', views.return_laptop, name='return_laptop'),
     path('laptops/<int:laptop_id>/edit/', views.laptop_edit, name='laptop_edit'),
-    path('process-checkin/<int:loan_id>/', views.process_checkin, name='process_checkin'),
+    path('approve-return/<int:loan_id>/', views.approve_return, name='approve_return'),
+    path('loan-history/', views.loan_history, name='loan_history'),
+path('approve-loan/<int:loan_id>/', views.approve_loan, name='approve_loan'),
 
 ]

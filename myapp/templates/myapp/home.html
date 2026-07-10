@@ -14,27 +14,69 @@
             <div class="message">{{ message }}</div>
         {% endfor %}
     {% endif %}
-    <p style="margin-bottom:16px;"><a href="{% url 'laptop_add' %}" style="color:var(--slate); font-weight:600; text-decoration:none; font-size:13.5px;">+ Add Laptop</a></p>
     <p style="margin-bottom:16px;"><a href="{% url 'laptop_list' %}" style="color:var(--slate); font-weight:600; text-decoration:none; font-size:13.5px;">View Full Inventory Details →</a></p>
+    <p style="margin-bottom:16px;"><a href="{% url 'loan_history' %}" style="color:var(--slate); font-weight:600; text-decoration:none; font-size:13.5px;">View Loan History →</a></p>
+    <p style="margin-bottom:16px;"><a href="{% url 'laptop_add' %}" style="color:var(--slate); font-weight:600; text-decoration:none; font-size:13.5px;">+ Add Laptop</a></p>
+    <h3 style="font-family:'Space Grotesk', sans-serif; font-size:16px; margin:24px 0 12px; color:var(--navy);">Pending Requests</h3>
+    <table>
+        <tr>
+            <th>Asset Tag</th>
+            <th>Requested By</th>
+            <th></th>
+        </tr>
+        {% for loan in pending_requests %}
+        <tr>
+            <td>{{ loan.laptop.asset_tag }}</td>
+            <td>{{ loan.borrower.username }}</td>
+            <td>
+                <form method="POST" action="{% url 'approve_loan' loan.id %}">
+                    {% csrf_token %}
+                    <button type="submit" style="width:auto; padding:6px 14px; font-size:13px; margin-top:0;">Approve</button>
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" style="color:var(--muted); text-align:center;">No pending requests</td></tr>
+        {% endfor %}
+    </table>
+
+    <h3 style="font-family:'Space Grotesk', sans-serif; font-size:16px; margin:24px 0 12px; color:var(--navy);">Return Requests</h3>
+    <table>
+        <tr>
+            <th>Asset Tag</th>
+            <th>Returned By</th>
+            <th></th>
+        </tr>
+        {% for loan in return_requests %}
+        <tr>
+            <td>{{ loan.laptop.asset_tag }}</td>
+            <td>{{ loan.borrower.username }}</td>
+            <td>
+                <form method="POST" action="{% url 'approve_return' loan.id %}">
+                    {% csrf_token %}
+                    <button type="submit" style="width:auto; padding:6px 14px; font-size:13px; margin-top:0;">Approve Return</button>
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" style="color:var(--muted); text-align:center;">No return requests</td></tr>
+        {% endfor %}
+    </table>
+
     <h3 style="font-family:'Space Grotesk', sans-serif; font-size:16px; margin:24px 0 12px; color:var(--navy);">Active Loans</h3>
     <table>
         <tr>
             <th>Asset Tag</th>
             <th>Borrower</th>
             <th>Due Date</th>
-            <th></th>
+            <th>Approved By</th>
         </tr>
         {% for loan in active_loans %}
         <tr>
             <td>{{ loan.laptop.asset_tag }}</td>
             <td>{{ loan.borrower.username }}</td>
             <td>{{ loan.due_date|date:"M d, Y" }}</td>
-            <td>
-                <form method="POST" action="{% url 'process_checkin' loan.id %}">
-                    {% csrf_token %}
-                    <button type="submit" style="width:auto; padding:6px 14px; font-size:13px; margin-top:0;">Check In</button>
-                </form>
-            </td>
+            <td>{{ loan.checkout_approved_by.username }}</td>
         </tr>
         {% empty %}
         <tr><td colspan="4" style="color:var(--muted); text-align:center;">No active loans</td></tr>

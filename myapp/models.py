@@ -24,18 +24,21 @@ class Laptop(models.Model):
 
 class Loan(models.Model):
     STATUS_CHOICES = [
+        ('pending', 'Pending Approval'),
         ('active', 'Active'),
+        ('return_pending', 'Return Pending Approval'),
         ('returned', 'Returned'),
         ('overdue', 'Overdue'),
     ]
 
     laptop = models.ForeignKey(Laptop, on_delete=models.CASCADE, related_name='loans')
-    borrower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='borrower')
-    processed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='loans_processed')
-    checkout_date = models.DateField(auto_now_add=True)
-    due_date = models.DateField()
+    borrower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='loans_borrowed')
+    checkout_approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='checkouts_approved')
+    return_approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='returns_approved')
+    checkout_date = models.DateTimeField(auto_now_add=True)
+    due_date = models.DateTimeField(null=True, blank=True)
     return_date = models.DateTimeField(null=True, blank=True)
-    loan_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    loan_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
     def __str__(self):
-        return f"{self.laptop.asset_tag} - {self.borrower.username} {self.loan_status}"
+        return f"{self.laptop.asset_tag} → {self.borrower.username} ({self.loan_status})"

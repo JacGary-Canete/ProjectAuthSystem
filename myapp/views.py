@@ -54,17 +54,26 @@ def logout_view(request):
 @user_passes_test(is_staff_user, login_url='login')
 def dashboard_home(request):
     laptops = Laptop.objects.all()
+    pending_requests = Loan.objects.filter(loan_status='pending')
+    return_requests = Loan.objects.filter(loan_status='return_pending')
     active_loans = Loan.objects.filter(loan_status='active')
-    return render(request, 'myapp/home.html', {'laptops': laptops, 'active_loans': active_loans})
+    return render(request, 'myapp/home.html', {
+        'laptops': laptops,
+        'pending_requests': pending_requests,
+        'return_requests': return_requests,
+        'active_loans': active_loans,
+    })
 
 
 @login_required
 def student_dashboard(request):
     available_count = Laptop.objects.filter(status='available').count()
     active_loans = Loan.objects.filter(borrower=request.user, loan_status='active')
+    pending_loans = Loan.objects.filter(borrower=request.user, loan_status='pending')
     return render(request, 'myapp/student_dashboard.html', {
         'available_count': available_count,
         'active_loans': active_loans,
+        'pending_loans': pending_loans,
     })
 
 
@@ -76,8 +85,8 @@ def browse_laptops(request):
 
 @login_required
 def borrow_laptop(request, laptop_id):
-    if Loan.objects.filter(borrower=request.user, loan_status='active').exists():
-        messages.error(request, 'You already have an active loan. Return it before borrowing another laptop.')
+    if Loan.objects.filter(borrower=request.user, loan_status__in=['pending', 'active']).exists():
+        messages.error(request, 'You already have a pending or active loan.')
         return redirect('browse_laptops')
 
     laptop = Laptop.objects.get(id=laptop_id)
@@ -89,13 +98,10 @@ def borrow_laptop(request, laptop_id):
     Loan.objects.create(
         laptop=laptop,
         borrower=request.user,
-        due_date=timezone.now() + timedelta(days=7),
-        loan_status='active',
+        loan_status='pending',
     )
-    laptop.status = 'borrowed'
-    laptop.save()
 
-    messages.success(request, f'You have borrowed {laptop.brand} {laptop.model}. Due in 7 days.')
+    messages.success(request, f'Request sent for {laptop.brand} {laptop.model}. Waiting for staff approval.')
     return redirect('student_dashboard')
 
 @login_required
@@ -106,14 +112,10 @@ def return_laptop(request, loan_id):
         messages.error(request, 'This loan is not active.')
         return redirect('student_dashboard')
 
-    loan.return_date = timezone.now()
-    loan.loan_status = 'returned'
+    loan.loan_status = 'return_pending'
     loan.save()
 
-    loan.laptop.status = 'available'
-    loan.laptop.save()
-
-    messages.success(request, f'You have returned {loan.laptop.brand} {loan.laptop.model}.')
+    messages.success(request, f'Return requested for {loan.laptop.brand} {loan.laptop.model}. Waiting for staff to inspect and approve.')
     return redirect('student_dashboard')
 
 
@@ -152,23 +154,48 @@ def laptop_edit(request, laptop_id):
         form = LaptopForm(instance=laptop)
     return render(request, 'myapp/laptop_edit.html', {'form': form, 'laptop': laptop})
 
+@login_required
+@user_passes_test(is_staff_user, login_url='login')
+def loan_history(request):
+    loans = Loan.objects.filter(loan_status='returned').order_by('-return_date')
+    return render(request, 'myapp/loan_history.html', {'loans': loans})
 
 @login_required
 @user_passes_test(is_staff_user, login_url='login')
-def process_checkin(request, loan_id):
+def approve_loan(request, loan_id):
     loan = Loan.objects.get(id=loan_id)
 
-    if loan.loan_status != 'active':
-        messages.error(request, 'This loan is not active.')
+    if loan.loan_status != 'pending':
+        messages.error(request, 'This request is no longer pending.')
+        return redirect('dashboard_home')
+
+    loan.loan_status = 'active'
+    loan.due_date = timezone.now() + timedelta(days=7)
+    loan.checkout_approved_by = request.user
+    loan.save()
+
+    loan.laptop.status = 'borrowed'
+    loan.laptop.save()
+
+    messages.success(request, f'Approved: {loan.laptop.asset_tag} checked out to {loan.borrower.username}.')
+    return redirect('dashboard_home')
+
+@login_required
+@user_passes_test(is_staff_user, login_url='login')
+def approve_return(request, loan_id):
+    loan = Loan.objects.get(id=loan_id)
+
+    if loan.loan_status != 'return_pending':
+        messages.error(request, 'This loan has no pending return request.')
         return redirect('dashboard_home')
 
     loan.return_date = timezone.now()
     loan.loan_status = 'returned'
-    loan.processed_by = request.user
+    loan.return_approved_by = request.user
     loan.save()
 
     loan.laptop.status = 'available'
     loan.laptop.save()
 
-    messages.success(request, f'Checked in {loan.laptop.asset_tag} from {loan.borrower.username}.')
+    messages.success(request, f'Return approved for {loan.laptop.asset_tag} from {loan.borrower.username}.')
     return redirect('dashboard_home')
