@@ -9,6 +9,16 @@
         </div>
         <a href="{% url 'laptop_add' %}">+ Add Laptop</a>
     </div>
+    <form method="GET" style="display:flex; gap:10px; margin-bottom:20px;">
+        <input type="text" name="q" placeholder="Search by asset tag or brand" value="{{ search_query }}" style="flex:1;">
+        <select name="status" style="padding:11px 14px; border:1px solid var(--border); border-radius:6px; font-size:14px; font-family:'Inter',sans-serif;">
+            <option value="">All Statuses</option>
+            <option value="available" {% if status_filter == 'available' %}selected{% endif %}>Available</option>
+            <option value="borrowed" {% if status_filter == 'borrowed' %}selected{% endif %}>Borrowed</option>
+            <option value="maintenance" {% if status_filter == 'maintenance' %}selected{% endif %}>Under Maintenance</option>
+        </select>
+        <button type="submit" style="width:auto; padding:11px 20px; margin-top:0;">Filter</button>
+    </form>
 
     {% if messages %}
         {% for message in messages %}

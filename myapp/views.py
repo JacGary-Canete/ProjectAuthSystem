@@ -7,6 +7,7 @@ from django.utils import timezone
 from datetime import timedelta
 from .forms import RegisterForm, LaptopForm
 from .models import Laptop, Loan
+from django.db.models import Q
 
 
 def is_staff_user(user):
@@ -123,8 +124,23 @@ def return_laptop(request, loan_id):
 @user_passes_test(is_staff_user, login_url='login')
 def laptop_list(request):
     laptops = Laptop.objects.all()
-    return render(request, 'myapp/laptop_list.html', {'laptops': laptops})
 
+    search_query = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+
+    if search_query:
+        laptops = laptops.filter(
+            Q(asset_tag__icontains=search_query) | Q(brand__icontains=search_query)
+        )
+
+    if status_filter:
+        laptops = laptops.filter(status=status_filter)
+
+    return render(request, 'myapp/laptop_list.html', {
+        'laptops': laptops,
+        'search_query': search_query,
+        'status_filter': status_filter,
+    })
 
 @login_required
 @user_passes_test(is_staff_user, login_url='login')
