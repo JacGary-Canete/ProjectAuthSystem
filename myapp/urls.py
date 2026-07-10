@@ -15,6 +15,8 @@ urlpatterns = [
     path('laptops/<int:laptop_id>/edit/', views.laptop_edit, name='laptop_edit'),
     path('approve-return/<int:loan_id>/', views.approve_return, name='approve_return'),
     path('loan-history/', views.loan_history, name='loan_history'),
-path('approve-loan/<int:loan_id>/', views.approve_loan, name='approve_loan'),
+    path('approve-loan/<int:loan_id>/', views.approve_loan, name='approve_loan'),
+    path('reject-return/<int:loan_id>/', views.reject_return, name='reject_return'),
+
 
 ]

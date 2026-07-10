@@ -5,27 +5,52 @@
     <div class="dashboard-header">
         <div>
             <div class="eyebrow">History</div>
-            <h2 style="margin-bottom:0;">Returned Loans</h2>
+            <h2 style="margin-bottom:0;">Loan History</h2>
         </div>
         <a href="{% url 'dashboard_home' %}">← Back</a>
     </div>
 
+    <h3 style="font-family:'Space Grotesk', sans-serif; font-size:16px; margin-bottom:12px; color:var(--navy);">Completed Returns</h3>
     <table>
         <tr>
             <th>Asset Tag</th>
             <th>Borrower</th>
+            <th>Checked Out By</th>
             <th>Returned</th>
-            <th>Processed By</th>
+            <th>Return Approved By</th>
         </tr>
-        {% for loan in loans %}
+        {% for loan in returned_loans %}
         <tr>
             <td>{{ loan.laptop.asset_tag }}</td>
             <td>{{ loan.borrower.username }}</td>
+            <td>{{ loan.checkout_approved_by.username }}</td>
             <td>{{ loan.return_date|date:"M d, Y H:i" }}</td>
-            <td>{% if loan.processed_by %}{{ loan.processed_by.username }}{% else %}Self-returned{% endif %}</td>
+            <td>{{ loan.return_approved_by.username }}</td>
         </tr>
         {% empty %}
-        <tr><td colspan="4" style="color:var(--muted); text-align:center;">No returned loans yet</td></tr>
+        <tr><td colspan="5" style="color:var(--muted); text-align:center;">No completed returns yet</td></tr>
+        {% endfor %}
+    </table>
+
+    <h3 style="font-family:'Space Grotesk', sans-serif; font-size:16px; margin:24px 0 12px; color:var(--navy);">Rejected Return Requests</h3>
+    <table>
+        <tr>
+            <th>Asset Tag</th>
+            <th>Borrower</th>
+            <th>Rejected By</th>
+            <th>Reason</th>
+            <th>Date</th>
+        </tr>
+        {% for loan in rejected_returns %}
+        <tr>
+            <td>{{ loan.laptop.asset_tag }}</td>
+            <td>{{ loan.borrower.username }}</td>
+            <td>{{ loan.rejected_by.username }}</td>
+            <td>{{ loan.rejection_reason }}</td>
+            <td>{{ loan.rejected_at|date:"M d, Y H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="color:var(--muted); text-align:center;">No rejected returns</td></tr>
         {% endfor %}
     </table>
 </div>

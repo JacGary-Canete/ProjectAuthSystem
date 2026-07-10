@@ -157,9 +157,12 @@ def laptop_edit(request, laptop_id):
 @login_required
 @user_passes_test(is_staff_user, login_url='login')
 def loan_history(request):
-    loans = Loan.objects.filter(loan_status='returned').order_by('-return_date')
-    return render(request, 'myapp/loan_history.html', {'loans': loans})
-
+    returned_loans = Loan.objects.filter(loan_status='returned').order_by('-return_date')
+    rejected_returns = Loan.objects.exclude(rejection_reason='').order_by('-rejected_at')
+    return render(request, 'myapp/loan_history.html', {
+        'returned_loans': returned_loans,
+        'rejected_returns': rejected_returns,
+    })
 @login_required
 @user_passes_test(is_staff_user, login_url='login')
 def approve_loan(request, loan_id):
@@ -199,3 +202,27 @@ def approve_return(request, loan_id):
 
     messages.success(request, f'Return approved for {loan.laptop.asset_tag} from {loan.borrower.username}.')
     return redirect('dashboard_home')
+
+@login_required
+@user_passes_test(is_staff_user, login_url='login')
+def reject_return(request, loan_id):
+    loan = Loan.objects.get(id=loan_id)
+
+    if loan.loan_status != 'return_pending':
+        messages.error(request, 'This loan has no pending return request.')
+        return redirect('dashboard_home')
+
+    reason = request.POST.get('reason', '').strip()
+    if not reason:
+        messages.error(request, 'A reason is required to reject a return.')
+        return redirect('dashboard_home')
+
+    loan.loan_status = 'active'
+    loan.rejection_reason = reason
+    loan.rejected_by = request.user
+    loan.rejected_at = timezone.now()
+    loan.save()
+
+    messages.success(request, f'Return rejected for {loan.laptop.asset_tag}. Laptop remains checked out.')
+    return redirect('dashboard_home')
+

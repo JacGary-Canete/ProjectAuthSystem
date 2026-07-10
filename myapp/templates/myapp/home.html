@@ -52,10 +52,18 @@
             <td>{{ loan.laptop.asset_tag }}</td>
             <td>{{ loan.borrower.username }}</td>
             <td>
-                <form method="POST" action="{% url 'approve_return' loan.id %}">
+                <form method="POST" action="{% url 'approve_return' loan.id %}" style="display:inline-block; margin-right:6px;">
                     {% csrf_token %}
-                    <button type="submit" style="width:auto; padding:6px 14px; font-size:13px; margin-top:0;">Approve Return</button>
+                    <button type="submit" style="width:auto; padding:6px 14px; font-size:13px; margin-top:0;">Approve</button>
                 </form>
+                <details style="display:inline-block;">
+                    <summary style="cursor:pointer; color:var(--error); font-size:13px; display:inline;">Reject</summary>
+                    <form method="POST" action="{% url 'reject_return' loan.id %}" style="margin-top:8px;">
+                        {% csrf_token %}
+                        <textarea name="reason" placeholder="Reason for rejection (e.g. damage found)" required style="width:100%; min-height:60px; padding:8px; border:1px solid var(--border); border-radius:6px; font-family:'Inter',sans-serif; font-size:13px; margin-bottom:6px;"></textarea>
+                        <button type="submit" style="width:auto; padding:6px 14px; font-size:13px; margin-top:0; background:var(--error);">Confirm Reject</button>
+                    </form>
+                </details>
             </td>
         </tr>
         {% empty %}
