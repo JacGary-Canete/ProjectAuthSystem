@@ -1,6 +1,6 @@
+import re
 from django import forms
 from django.contrib.auth.models import User
-
 from myapp.models import Laptop
 
 
@@ -22,6 +22,12 @@ class RegisterForm(forms.ModelForm):
         cleaned_data = super().clean()
         password = cleaned_data.get("password")
         confirm_password = cleaned_data.get("confirm_password")
+
+        if password:
+            if len(password) < 8:
+                raise forms.ValidationError("Password must be at least 8 characters long.")
+            if not re.search(r'\d', password):
+                raise forms.ValidationError("Password must contain at least one number.")
 
         if password and confirm_password and password != confirm_password:
             raise forms.ValidationError("Passwords do not match.")
