@@ -51,3 +51,13 @@ class Loan(models.Model):
 
     def __str__(self):
         return f"{self.laptop.asset_tag} → {self.borrower.username} ({self.loan_status})"
+
+class LoginAttempt(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='login_attempt')
+    failed_attempts = models.PositiveIntegerField(default=0)
+    locked_until = models.DateTimeField(null=True, blank=True)
+
+    def is_locked(self):
+        if self.locked_until and timezone.now() < self.locked_until:
+            return True
+        return False

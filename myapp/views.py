@@ -8,7 +8,7 @@ from datetime import timedelta
 from .forms import RegisterForm, LaptopForm
 from .models import Laptop, Loan
 from django.db.models import Q
-
+from .models import Laptop, Loan, LoginAttempt
 
 def is_staff_user(user):
     return user.is_staff
@@ -34,17 +34,44 @@ def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+
+        try:
+            user_obj = User.objects.get(username=username)
+            attempt, _ = LoginAttempt.objects.get_or_create(user=user_obj)
+        except User.DoesNotExist:
+            attempt = None
+
+        if attempt and attempt.is_locked():
+            remaining = (attempt.locked_until - timezone.now()).seconds // 60 + 1
+            messages.error(request, f'Account locked due to too many failed attempts. Try again in {remaining} minute(s).')
+            return render(request, 'myapp/login.html')
+
         user = authenticate(request, username=username, password=password)
+
         if user is not None:
+            if attempt:
+                attempt.failed_attempts = 0
+                attempt.locked_until = None
+                attempt.save()
             login(request, user)
             if user.is_staff:
                 return redirect('dashboard_home')
             else:
                 return redirect('student_dashboard')
         else:
-            messages.error(request, 'Invalid email or password. Please try again.')
-    return render(request, 'myapp/login.html')
+            if attempt:
+                attempt.failed_attempts += 1
+                if attempt.failed_attempts >= 5:
+                    attempt.locked_until = timezone.now() + timedelta(minutes=5)
+                    messages.error(request, 'Account locked due to too many failed attempts. Try again in 5 minutes.')
+                else:
+                    remaining_tries = 5 - attempt.failed_attempts
+                    messages.error(request, f'Invalid email or password. {remaining_tries} attempt(s) remaining before lockout.')
+                attempt.save()
+            else:
+                messages.error(request, 'Invalid email or password. Please try again.')
 
+    return render(request, 'myapp/login.html')
 
 def logout_view(request):
     logout(request)
