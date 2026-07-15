@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class Laptop(models.Model):
     STATUS_CHOICES = [
@@ -42,6 +43,11 @@ class Loan(models.Model):
     rejection_reason = models.TextField(blank=True)
     rejected_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='returns_rejected')
     rejected_at = models.DateTimeField(null=True, blank=True)
+
+    def is_overdue(self):
+        if self.loan_status == 'active' and self.due_date:
+            return timezone.now() > self.due_date
+        return False
 
     def __str__(self):
         return f"{self.laptop.asset_tag} → {self.borrower.username} ({self.loan_status})"

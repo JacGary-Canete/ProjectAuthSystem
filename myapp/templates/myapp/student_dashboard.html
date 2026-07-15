@@ -45,6 +45,13 @@
             <span style="color:var(--muted); font-size:13px;">Awaiting staff approval</span>
             {% endif %}
         </td>
+        <td>
+            {% if loan.is_overdue %}
+                <span style="color:var(--error); font-weight:600;">Overdue</span>
+            {% else %}
+                {{ loan.get_loan_status_display }}
+            {% endif %}
+        </td>
     </tr>
     {% endfor %}
     </table>

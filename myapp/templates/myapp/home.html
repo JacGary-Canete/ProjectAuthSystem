@@ -86,6 +86,12 @@
             <td>{{ loan.due_date|date:"M d, Y" }}</td>
             <td>{{ loan.checkout_approved_by.username }}</td>
         </tr>
+            <td>
+    {{ loan.due_date|date:"M d, Y" }}
+    {% if loan.is_overdue %}
+        <br><span style="color:var(--error); font-size:12px; font-weight:600;">OVERDUE</span>
+    {% endif %}
+</td>
         {% empty %}
         <tr><td colspan="4" style="color:var(--muted); text-align:center;">No active loans</td></tr>
         {% endfor %}
